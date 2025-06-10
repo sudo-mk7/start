@@ -1,2 +1,77 @@
-# Start
-Dieses Repository dient als Grundlage für ein neues Projekt.
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Sternen-Ausweichen</title>
+<style>
+  canvas { background: #000; display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+<canvas id="game" width="400" height="400"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const rows = 20;
+const cols = 20;
+const cellW = canvas.width / cols;
+const cellH = canvas.height / rows;
+let board = new Array(rows).fill(-1);
+let playerX = Math.floor(cols / 2);
+let running = true;
+let speed = 500; // in ms
+let loop = setInterval(step, speed);
+let speedTimer = setInterval(() => {
+  speed = Math.max(100, speed - 50);
+  clearInterval(loop);
+  loop = setInterval(step, speed);
+}, 10000);
+
+document.addEventListener('keydown', (e) => {
+  if (!running) return;
+  if (e.key === 'ArrowLeft' && playerX > 0) playerX--;
+  if (e.key === 'ArrowRight' && playerX < cols - 1) playerX++;
+  draw();
+});
+
+function step() {
+  board.unshift(Math.floor(Math.random() * cols));
+  const bottom = board.pop();
+  if (bottom === playerX) {
+    gameOver();
+    return;
+  }
+  draw();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#fff';
+  ctx.font = cellH + 'px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let r = 0; r < rows; r++) {
+    const star = board[r];
+    if (star >= 0) {
+      const x = star * cellW + cellW / 2;
+      const y = r * cellH + cellH / 2;
+      ctx.fillText('*', x, y);
+    }
+  }
+  // draw player
+  ctx.fillText('O', playerX * cellW + cellW / 2, canvas.height - cellH / 2);
+}
+
+draw();
+
+function gameOver() {
+  running = false;
+  clearInterval(loop);
+  clearInterval(speedTimer);
+  ctx.fillStyle = 'red';
+  ctx.font = '30px Arial';
+  ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+}
+</script>
+</body>
+</html>
