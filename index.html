@@ -16,19 +16,34 @@ const rows = 20;
 const cols = 20;
 const cellW = canvas.width / cols;
 const cellH = canvas.height / rows;
-let board = new Array(rows).fill(-1);
-let playerX = Math.floor(cols / 2);
-let running = true;
-let speed = 500; // in ms
-let loop = setInterval(step, speed);
-let speedTimer = setInterval(() => {
-  speed = Math.max(100, speed - 50);
-  clearInterval(loop);
+let board;
+let playerX;
+let running = false;
+let speed;
+let loop;
+let speedTimer;
+let score = 0;
+
+function startGame() {
+  board = new Array(rows).fill(-1);
+  playerX = Math.floor(cols / 2);
+  running = true;
+  speed = 500;
   loop = setInterval(step, speed);
-}, 10000);
+  speedTimer = setInterval(() => {
+    speed = Math.max(100, speed - 50);
+    clearInterval(loop);
+    loop = setInterval(step, speed);
+  }, 10000);
+  score = 0;
+  draw();
+}
 
 document.addEventListener('keydown', (e) => {
-  if (!running) return;
+  if (!running) {
+    if (e.code === 'Space') startGame();
+    return;
+  }
   if (e.key === 'ArrowLeft' && playerX > 0) playerX--;
   if (e.key === 'ArrowRight' && playerX < cols - 1) playerX++;
   draw();
@@ -41,6 +56,7 @@ function step() {
     gameOver();
     return;
   }
+  if (bottom >= 0) score++;
   draw();
 }
 
@@ -50,6 +66,7 @@ function draw() {
   ctx.font = cellH + 'px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.fillText('Score: ' + score, canvas.width - 60, cellH / 2);
   for (let r = 0; r < rows; r++) {
     const star = board[r];
     if (star >= 0) {
@@ -62,7 +79,7 @@ function draw() {
   ctx.fillText('O', playerX * cellW + cellW / 2, canvas.height - cellH / 2);
 }
 
-draw();
+startGame();
 
 function gameOver() {
   running = false;
@@ -70,7 +87,7 @@ function gameOver() {
   clearInterval(speedTimer);
   ctx.fillStyle = 'red';
   ctx.font = '30px Arial';
-  ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+  ctx.fillText('Game Over - Punkte: ' + score, canvas.width / 2, canvas.height / 2);
 }
 </script>
 </body>
